@@ -1,6 +1,6 @@
 import {Controller, Get, Inject, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import { AppService } from './app.service';
-import { ClientKafka } from '@nestjs/microservices';
+import {ClientKafka, Ctx, KafkaContext, MessagePattern, Payload} from '@nestjs/microservices';
 
 @Controller()
 export class AppController implements OnModuleInit, OnModuleDestroy{
@@ -34,5 +34,13 @@ export class AppController implements OnModuleInit, OnModuleDestroy{
     return this.client.send('medium.rocks', {foo:'bar', data: new Date().toString()})
   }
 
+  @MessagePattern('medium.rocks')
+  readMessage(@Payload() message: any, @Ctx() context: KafkaContext) {
+    const originalMessage = context.getMessage();
+    const response =
+      `Receiving a new message from topic: medium.rocks: ` +
+      JSON.stringify(originalMessage.value);
+    return response;
+  }
 
 }
